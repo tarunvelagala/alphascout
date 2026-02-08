@@ -17,7 +17,16 @@ describe('AlphaScoutStack', () => {
   });
 
   test('creates a Lambda function', () => {
-    template.resourceCountIs('AWS::Lambda::Function', 1);
+    template.hasResourceProperties('AWS::Lambda::Function', {
+      Runtime: 'python3.10',
+      Handler: 'app.handler',
+      Environment: {
+        Variables: {
+          ENVIRONMENT: 'test',
+          LOG_LEVEL: 'INFO',
+        },
+      },
+    });
   });
 
   test('lambda uses Python 3.10 runtime', () => {
@@ -47,13 +56,21 @@ describe('AlphaScoutStack', () => {
     });
   });
 
-  test('lambda has correct environment variables', () => {
-    template.hasResourceProperties('AWS::Lambda::Function', {
-      Environment: {
-        Variables: {
-          ENVIRONMENT: 'test',
-        },
-      },
+  // LogGroup Tests
+  test('LogGroup exists with correct retention', () => {
+    template.hasResourceProperties('AWS::Logs::LogGroup', {
+      LogGroupName: Match.anyValue(), // avoid matching Fn::Join
+      RetentionInDays: 30,
     });
+  });
+
+  test('LogGroup has removal policy destroy', () => {
+    const logGroups = template.findResources('AWS::Logs::LogGroup', {});
+    const logGroupKey = Object.keys(logGroups).find((k) => logGroups[k].Type === 'AWS::Logs::LogGroup');
+    expect(logGroupKey).toBeDefined();
+    if (logGroupKey) {
+      expect(logGroups[logGroupKey].DeletionPolicy).toBe('Delete');
+      expect(logGroups[logGroupKey].UpdateReplacePolicy).toBe('Delete');
+    }
   });
 });
