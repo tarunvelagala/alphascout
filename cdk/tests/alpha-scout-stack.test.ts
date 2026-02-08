@@ -1,6 +1,6 @@
 import { Template, Match } from 'aws-cdk-lib/assertions';
-import { AlphaScoutStack } from '../lib/alpha-scout-stack';
-import { App } from 'aws-cdk-lib/core';
+import { AlphaScoutStack } from '../infrastructure/alpha-scout-stack';
+import { App } from 'aws-cdk-lib';
 
 describe('AlphaScoutStack', () => {
   let app: App;
@@ -23,9 +23,10 @@ describe('AlphaScoutStack', () => {
     });
   });
 
-  test('lambda handler is correct', () => {
+  test('lambda handler matches PythonFunction convention', () => {
     template.hasResourceProperties('AWS::Lambda::Function', {
-      Handler: 'handler.lambda_handler',
+      // PythonFunction automatically sets handler as 'app.handler'
+      Handler: 'app.handler',
     });
   });
 
@@ -35,6 +36,12 @@ describe('AlphaScoutStack', () => {
         S3Bucket: Match.anyValue(),
         S3Key: Match.anyValue(),
       },
+    });
+  });
+
+  test('lambda has no environment variables by default', () => {
+    template.hasResourceProperties('AWS::Lambda::Function', {
+      Environment: Match.absent(),
     });
   });
 });
