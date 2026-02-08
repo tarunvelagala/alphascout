@@ -1,20 +1,20 @@
 #!/usr/bin/env node
-import { App } from 'aws-cdk-lib/core';
+import * as cdk from 'aws-cdk-lib';
 import { AlphaScoutStack } from '../infrastructure/alpha-scout-stack';
+import { envMap } from '../infrastructure/env-config';
 
-const app = new App();
-new AlphaScoutStack(app, 'AlphaScoutStack', {
-  /* If you don't specify 'env', this stack will be environment-agnostic.
-   * Account/Region-dependent features and context lookups will not work,
-   * but a single synthesized template can be deployed anywhere. */
+const envName = process.env.ENVIRONMENT || 'dev';
 
-  /* Uncomment the next line to specialize this stack for the AWS Account
-   * and Region that are implied by the current CLI configuration. */
-  // env: { account: process.env.CDK_DEFAULT_ACCOUNT, region: process.env.CDK_DEFAULT_REGION },
+// Validate environment exists
+if (!envMap[envName]) {
+  throw new Error(`Unknown environment '${envName}'. Valid options: ${Object.keys(envMap).join(', ')}`);
+}
 
-  /* Uncomment the next line if you know exactly what Account and Region you
-   * want to deploy the stack to. */
-  env: { account: '714036130996', region: 'ap-south-1' },
+const app = new cdk.App();
 
-  /* For more information, see https://docs.aws.amazon.com/cdk/latest/guide/environments.html */
+const stackName = `AlphaScoutStack-${envName}`;
+
+new AlphaScoutStack(app, stackName, {
+  environmentName: envName,
+  env: envMap[envName],
 });

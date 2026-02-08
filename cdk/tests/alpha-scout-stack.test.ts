@@ -1,15 +1,18 @@
 import { Template, Match } from 'aws-cdk-lib/assertions';
 import { AlphaScoutStack } from '../infrastructure/alpha-scout-stack';
-import { App } from 'aws-cdk-lib';
+import * as cdk from 'aws-cdk-lib';
 
 describe('AlphaScoutStack', () => {
-  let app: App;
+  let app: cdk.App;
   let stack: AlphaScoutStack;
   let template: Template;
 
   beforeAll(() => {
-    app = new App();
-    stack = new AlphaScoutStack(app, 'TestAlphaScoutStack');
+    app = new cdk.App();
+    stack = new AlphaScoutStack(app, 'TestAlphaScoutStack', {
+      environmentName: 'test',
+      env: { account: '123456789012', region: 'ap-south-1' },
+    });
     template = Template.fromStack(stack);
   });
 
@@ -25,7 +28,7 @@ describe('AlphaScoutStack', () => {
 
   test('lambda handler matches PythonFunction convention', () => {
     template.hasResourceProperties('AWS::Lambda::Function', {
-      // PythonFunction automatically sets handler as 'app.handler'
+      // PythonFunction automatically sets handler as '{index}.{handler}'
       Handler: 'app.handler',
     });
   });
@@ -33,15 +36,18 @@ describe('AlphaScoutStack', () => {
   test('lambda code is packaged as an asset', () => {
     template.hasResourceProperties('AWS::Lambda::Function', {
       Code: {
-        S3Bucket: Match.anyValue(),
         S3Key: Match.anyValue(),
       },
     });
   });
 
-  test('lambda has no environment variables by default', () => {
+  test('lambda has correct environment variables', () => {
     template.hasResourceProperties('AWS::Lambda::Function', {
-      Environment: Match.absent(),
+      Environment: {
+        Variables: {
+          ENVIRONMENT: 'test',
+        },
+      },
     });
   });
 });

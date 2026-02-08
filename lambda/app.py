@@ -1,5 +1,6 @@
 def handler(event, context):
+    environmentName = event.get('environmentName', 'dev')
     return {
         "statusCode": 200,
-        "body": "Hello from PythonFunction..."
+        "body": f"Hello from Alphascout in environment {environmentName}!"
     }

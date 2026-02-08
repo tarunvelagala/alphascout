@@ -1,19 +1,29 @@
 import { PythonFunction } from '@aws-cdk/aws-lambda-python-alpha';
-import { Stack, StackProps } from 'aws-cdk-lib';
+import { Stack, StackProps, Tags } from 'aws-cdk-lib';
 import { Runtime } from 'aws-cdk-lib/aws-lambda';
 import { Construct } from 'constructs';
 
+export interface AlphaScoutStackProps extends StackProps {
+    readonly environmentName: string;
+}
+
 export class AlphaScoutStack extends Stack {
-    constructor(scope: Construct, id: string, props?: StackProps) {
+    constructor(scope: Construct, id: string, props: AlphaScoutStackProps) {
         super(scope, id, props);
 
+    // Tag all resources for cost allocation & environment
+    Tags.of(this).add('Project', 'AlphaScout');
+    Tags.of(this).add('Environment',  props.environmentName);
+
         // You can add more resources here, e.g. Lambda, DynamoDB, etc.
-        const alphaScoutLambda = new PythonFunction(this, 'AlphaScoutLambda', {
+        const alphaScoutLambda = new PythonFunction(this, `AlphaScoutLambda-${props.environmentName}`, {
             entry: '../lambda', // folder with your Python code
             index: 'app.py', // file containing the handler
             handler: 'handler', // function name inside app.py
             runtime: Runtime.PYTHON_3_10,
-            environment: {},
+            environment: {
+                ENVIRONMENT: props.environmentName
+            },
         });
     }
 }
