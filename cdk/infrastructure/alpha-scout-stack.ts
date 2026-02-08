@@ -21,6 +21,7 @@ export class AlphaScoutStack extends Stack {
             index: 'app.py', // file containing the handler
             handler: 'handler', // function name inside app.py
             runtime: Runtime.PYTHON_3_10,
+            functionName: `AlphaScoutLambda-${props.environmentName}`,
             environment: {
                 ENVIRONMENT: props.environmentName
             },

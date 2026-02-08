@@ -26,6 +26,12 @@ describe('AlphaScoutStack', () => {
     });
   });
 
+  test('lambda has correct function name', () => {
+    template.hasResourceProperties('AWS::Lambda::Function', {
+      FunctionName: 'AlphaScoutLambda-test',
+    });
+  });
+
   test('lambda handler matches PythonFunction convention', () => {
     template.hasResourceProperties('AWS::Lambda::Function', {
       // PythonFunction automatically sets handler as '{index}.{handler}'
